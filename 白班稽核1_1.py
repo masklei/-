@@ -620,7 +620,7 @@ def main():
                 os.makedirs(attendance_dir)
             
             # 保存结果
-            output_file = os.path.join(attendance_dir, "白班稽核结果.xlsx")
+            output_file = os.path.join(attendance_dir, "白班稽查结果.xlsx")
             save_result_to_excel(result_df, output_file)
         else:
             print("未发现需要保存的异常数据")
