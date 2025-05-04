@@ -124,6 +124,27 @@ def optimize_excel():
             if start != end:  # 只有多行才需要合并
                 ws.merge_cells(start_row=start, start_column=name_col, end_row=end, end_column=name_col)
         
+        # 合并异常描述列（当下方单元格为空时）
+        if desc_col:
+            for row in range(2, ws.max_row):
+                current_value = ws.cell(row=row, column=desc_col).value
+                next_value = ws.cell(row=row+1, column=desc_col).value
+                
+                if current_value and not next_value:
+                    # 找到下方连续空单元格的范围
+                    end_row = row + 1
+                    while end_row < ws.max_row and not ws.cell(row=end_row+1, column=desc_col).value:
+                        end_row += 1
+                    
+                    # 合并单元格
+                    ws.merge_cells(start_row=row, start_column=desc_col, 
+                                 end_row=end_row, end_column=desc_col)
+                    # 设置合并后的单元格垂直居中
+                    ws.cell(row=row, column=desc_col).alignment = Alignment(
+                        vertical='center',
+                        horizontal='center'
+                    )
+        
         # 设置单元格格式
         for row in range(1, ws.max_row + 1):
             for col in range(1, ws.max_column + 1):
@@ -145,6 +166,52 @@ def optimize_excel():
         # 保存优化后的文件
         wb.save(output_file)
         print(f"优化完成！结果已保存至: {output_file}")
+        
+        # 生成异常报告
+        try:
+            # 创建异常报告工作表
+            report_sheet = wb.create_sheet("异常报告")
+            
+            # 分析异常数据
+            anomaly_df = df[df['异常描述'].notna()]
+            
+            # 统计异常类型
+            anomaly_stats = anomaly_df['异常描述'].value_counts().reset_index()
+            anomaly_stats.columns = ['异常类型', '出现次数']
+            
+            # 写入异常统计
+            report_sheet.append(['异常类型', '出现次数'])
+            for _, row in anomaly_stats.iterrows():
+                report_sheet.append([row['异常类型'], row['出现次数']])
+            
+            # 添加AI分析结论
+            report_sheet.append([''])
+            report_sheet.append(['AI分析结论:'])
+            
+            # 根据异常数据生成分析结论
+            if len(anomaly_df) > 0:
+                most_common = anomaly_stats.iloc[0]['异常类型']
+                report_sheet.append([f"最常见的异常类型是: {most_common}"])
+                
+                # 按部门分析异常
+                dept_stats = anomaly_df.groupby('部门')['异常描述'].count().sort_values(ascending=False)
+                report_sheet.append([''])
+                report_sheet.append(['各部门异常数量统计:'])
+                for dept, count in dept_stats.items():
+                    report_sheet.append([dept, count])
+                
+                report_sheet.append([''])
+                report_sheet.append(["建议: 重点关注异常高发的部门和异常类型"]) 
+            else:
+                report_sheet.append(["未发现异常记录"]) 
+            
+            # 保存包含报告的文件
+            wb.save(output_file)
+            print(f"异常报告已生成并保存至: {output_file}")
+            
+        except Exception as e:
+            print(f"生成异常报告时出错: {str(e)}")
+            
         return True
         
     except Exception as e:
