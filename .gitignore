@@ -50,3 +50,11 @@ m4/lt~obsolete.m4
 # can automatically generate from config.status script
 # (which is called by configure script))
 Makefile
+
+# Python
+__pycache__/
+*.py[cod]
+
+# Runtime output of 考勤自动化处理系统
+考勤数据/
+processing.log

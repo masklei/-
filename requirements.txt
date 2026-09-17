@@ -1,0 +1,11 @@
+# 考勤自动化处理系统 - Python 依赖
+# Core data/Excel processing (cross-platform)
+pandas
+numpy
+openpyxl
+xlrd
+pyxlsb
+
+# Windows-only: Excel COM automation used by EXCEL修复.py.
+# Installs only on Windows; skipped on Linux/macOS dev environments.
+pywin32; sys_platform == "win32"
