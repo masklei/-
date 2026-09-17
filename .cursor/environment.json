@@ -1,0 +1,4 @@
+{
+  "name": "考勤自动化处理系统",
+  "install": "sudo apt-get update && sudo apt-get install -y python3-tk && pip install --user -r requirements.txt"
+}
